@@ -11,6 +11,8 @@ const FormChat: React.FC<MessageFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!message) return
+
     onSubmit(message)
     setMessage('')
   }
