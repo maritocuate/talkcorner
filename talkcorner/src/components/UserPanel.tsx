@@ -18,7 +18,7 @@ export default function UserPanel() {
   }, [])
 
   const receiveMessage = (message: Message) => {
-    setMessages(prev => [message, ...prev])
+    setMessages(prev => [...prev, message])
   }
 
   const handleSubmit = (message: string) => {

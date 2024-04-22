@@ -6,12 +6,15 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import UserPanel from './components/UserPanel'
+import UsersList from './components/UsersList'
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <ResizablePanelGroup direction="horizontal" className="h-screen">
-        <ResizablePanel>Connected users</ResizablePanel>
+        <ResizablePanel>
+          <UsersList />
+        </ResizablePanel>
 
         <ResizableHandle withHandle />
 
