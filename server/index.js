@@ -1,4 +1,9 @@
 import express from 'express'
+import http from 'http'
+import { Server as SocketServer } from 'socket.io'
 
 const app = express()
-const server = app.listen(3000)
+const server = http.createServer(app)
+const io = new SocketServer(server)
+
+server.listen(3000)
