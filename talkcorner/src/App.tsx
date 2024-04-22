@@ -4,6 +4,8 @@ import io from 'socket.io-client'
 import { Input } from './components/ui/input'
 import { Button } from './components/ui/button'
 import { Message } from './interfaces'
+import { ThemeProvider } from './components/theme-provider'
+import { ModeToggle } from './components/mode-toggle'
 
 const socket = io('/')
 
@@ -37,7 +39,8 @@ function App() {
   }
 
   return (
-    <>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ModeToggle />
       <form onSubmit={handleSubmit}>
         <Input
           placeholder="Enter message"
@@ -54,7 +57,7 @@ function App() {
           </li>
         ))}
       </ul>
-    </>
+    </ThemeProvider>
   )
 }
 
