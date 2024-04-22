@@ -18,7 +18,7 @@ export default function UsersList() {
 
   return (
     <div>
-      <h1>Online Users:</h1>
+      <h1>Online Users</h1>
       <ul>
         {onlineUsers.map((userId: string) => (
           <li key={userId}>{userId.slice(0, 6)}</li>
