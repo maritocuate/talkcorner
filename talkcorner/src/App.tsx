@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import io from 'socket.io-client'
-import { Input } from './components/ui/input'
-import { Button } from './components/ui/button'
 import { Message } from './interfaces'
 import { ThemeProvider } from './components/theme-provider'
 import { ModeToggle } from './components/mode-toggle'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable'
+import Messages from './components/Messages'
+import FormChat from './components/FormChat'
 
 const socket = io('/')
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([])
-  const [message, setMessage] = useState<string>('')
 
   useEffect(() => {
     socket.on('message', receiveMessage)
@@ -25,38 +29,31 @@ function App() {
     setMessages(prev => [message, ...prev])
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = (message: string) => {
     const newMessage: Message = {
       body: message,
       from: 'Me',
     }
 
     setMessages(prev => [newMessage, ...prev])
-    setMessage('')
     socket.emit('message', newMessage.body)
-    console.log(messages)
   }
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel>Connected users</ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel>
+          <FormChat onSubmit={handleSubmit} />
+
+          <Messages messages={messages} />
+        </ResizablePanel>
+      </ResizablePanelGroup>
+
       <ModeToggle />
-      <form onSubmit={handleSubmit}>
-        <Input
-          placeholder="Enter message"
-          onChange={e => setMessage(e.target.value)}
-          value={message}
-          autoFocus
-        />
-        <Button>Send</Button>
-      </form>
-      <ul>
-        {messages.map((message: Message, index) => (
-          <li key={index}>
-            <b>{message.from}</b>:{message.body}
-          </li>
-        ))}
-      </ul>
     </ThemeProvider>
   )
 }
