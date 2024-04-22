@@ -16,14 +16,14 @@ const FormChat: React.FC<MessageFormProps> = ({ onSubmit }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
         placeholder="Enter message"
         onChange={e => setMessage(e.target.value)}
         value={message}
         autoFocus
       />
-      <Button>Send</Button>
+      <Button className="secondary">Send</Button>
     </form>
   )
 }
