@@ -45,7 +45,9 @@ function App() {
       </form>
       <ul>
         {messages.map((message, index) => (
-          <li key={index}>{message.body}</li>
+          <li key={index}>
+            <b>{message.from}</b>:{message.body}
+          </li>
         ))}
       </ul>
     </>
