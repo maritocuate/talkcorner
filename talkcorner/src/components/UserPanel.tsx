@@ -24,7 +24,7 @@ export default function UserPanel() {
   const handleSubmit = (message: string) => {
     const newMessage: Message = {
       body: message,
-      from: 'Me',
+      from: String(socket.id).slice(0, 6),
     }
 
     setMessages(prev => [...prev, newMessage])
