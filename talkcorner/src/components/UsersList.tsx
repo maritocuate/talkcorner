@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 import { useToast } from '@/components/ui/use-toast'
+import { ModeToggle } from './mode-toggle'
 //import { generateUsername } from 'unique-username-generator'
 
 export default function UsersList({ socket }: { socket: Socket }) {
@@ -26,6 +27,7 @@ export default function UsersList({ socket }: { socket: Socket }) {
 
   return (
     <div>
+      <ModeToggle />
       <h1>Online Users: {onlineUsers.length}</h1>
       <ul>
         {onlineUsers.map((userId: string, index: number) => (
