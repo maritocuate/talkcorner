@@ -4,7 +4,7 @@ import FormChat from './FormChat'
 import Messages from './Messages'
 import io from 'socket.io-client'
 
-const socket = io('https://glib-chief-august.glitch.me')
+const socket = io('/')
 
 export default function UserPanel() {
   const [messages, setMessages] = useState<Message[]>([])

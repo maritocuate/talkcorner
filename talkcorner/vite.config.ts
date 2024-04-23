@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/socket.io': {
-        target: 'https://glib-chief-august.glitch.me',
+        target: 'https://glib-chief-august.glitch.me:4000',
         ws: true,
       },
     },
