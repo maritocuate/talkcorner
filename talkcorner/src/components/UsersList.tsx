@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 import { useToast } from '@/components/ui/use-toast'
 import { ModeToggle } from './mode-toggle'
+import { User } from 'lucide-react'
 //import { generateUsername } from 'unique-username-generator'
 
 export default function UsersList({ socket }: { socket: Socket }) {
@@ -26,12 +27,17 @@ export default function UsersList({ socket }: { socket: Socket }) {
   }, [socket, toast])
 
   return (
-    <div>
-      <ModeToggle />
-      <h1>Online Users: {onlineUsers.length}</h1>
+    <div className="text-left p-2">
+      <p className="text-primary text-2xl font-semibold mb-3">
+        <span className="mr-3">Online Users: {onlineUsers.length}</span>
+        <ModeToggle />
+      </p>
       <ul>
         {onlineUsers.map((userId: string, index: number) => (
-          <li key={index}>{userId}</li>
+          <li key={index} className="flex gap-2">
+            <User size={22} className="text-primary" />
+            {userId}
+          </li>
         ))}
       </ul>
     </div>
