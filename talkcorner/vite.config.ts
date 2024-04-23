@@ -10,6 +10,7 @@ export default defineConfig({
       '/socket.io': {
         target: 'https://glib-chief-august.glitch.me',
         ws: true,
+        changeOrigin: true,
       },
     },
   },
