@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import io from 'socket.io-client'
 
-const socket = io('/')
+const socket = io('https://glib-chief-august.glitch.me')
 
 export default function UsersList() {
   const [onlineUsers, setOnlineUsers] = useState([])
