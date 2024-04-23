@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Message } from '@/interfaces'
+import { Socket } from 'socket.io-client'
 import FormChat from './FormChat'
 import Messages from './Messages'
-import io from 'socket.io-client'
 
-const socket = io('https://glib-chief-august.glitch.me')
-
-export default function UserPanel() {
+export default function UserPanel({ socket }: { socket: Socket }) {
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {

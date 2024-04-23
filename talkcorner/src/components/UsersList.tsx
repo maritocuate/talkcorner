@@ -1,34 +1,35 @@
 import { useEffect, useState } from 'react'
-import io from 'socket.io-client'
+import { Socket } from 'socket.io-client'
 import { useToast } from '@/components/ui/use-toast'
+//import { generateUsername } from 'unique-username-generator'
 
-const socket = io('https://glib-chief-august.glitch.me')
-
-export default function UsersList() {
+export default function UsersList({ socket }: { socket: Socket }) {
   const [onlineUsers, setOnlineUsers] = useState([])
   const { toast } = useToast()
+  //const userName = generateUsername('-', 0, 15)
 
   useEffect(() => {
     socket.on('onlineUsers', users => {
       setOnlineUsers(users)
 
-      const userName = users[users.length - 1].slice(0, 6)
       toast({
-        description: `${userName} joined the room`,
+        description: `${users[users.length - 1]} joined the chat`,
+        className:
+          'top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4',
       })
     })
 
     return () => {
-      socket.off('onlineUsers', setOnlineUsers)
+      socket.off('onlineUsers')
     }
-  }, [toast])
+  }, [socket, toast])
 
   return (
     <div>
       <h1>Online Users: {onlineUsers.length}</h1>
       <ul>
-        {onlineUsers.map((userId: string) => (
-          <li key={userId}>{userId.slice(0, 6)}</li>
+        {onlineUsers.map((userId: string, index: number) => (
+          <li key={index}>{userId}</li>
         ))}
       </ul>
     </div>
