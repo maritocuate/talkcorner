@@ -9,8 +9,7 @@ import io, { Socket } from 'socket.io-client'
 import UserPanel from './components/UserPanel'
 import UsersList from './components/UsersList'
 
-const socket: Socket = io('https://glib-chief-august.glitch.me')
-//const socket: Socket = io('http://localhost:3000')
+const socket: Socket = io(process.env.SOCKET || 'http://localhost:3000')
 
 function App() {
   return (
