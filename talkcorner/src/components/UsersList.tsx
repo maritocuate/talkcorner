@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 import { useToast } from '@/components/ui/use-toast'
 import { ModeToggle } from './mode-toggle'
-import { User } from 'lucide-react'
+import { Pencil, User } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 //import { generateUsername } from 'unique-username-generator'
 
 export default function UsersList({ socket }: { socket: Socket }) {
@@ -28,8 +29,16 @@ export default function UsersList({ socket }: { socket: Socket }) {
 
   return (
     <div className="text-left p-2">
-      <p className="text-primary text-2xl font-semibold mb-3">
-        <span className="mr-3">Online Users: {onlineUsers.length}</span>
+      <h2 className="flex items-center gap-2 text-primary text-3xl font-bold mb-3">
+        <Avatar>
+          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+        {socket.id?.slice(0, 6)}
+        <Pencil size={15} className="text-muted-foreground" />
+      </h2>
+      <p className="text-muted-foreground font-semibold mb-3">
+        <span className="mr-3">Online Users {onlineUsers.length}</span>
         <ModeToggle />
       </p>
       <ul>
