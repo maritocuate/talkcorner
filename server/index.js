@@ -1,6 +1,7 @@
 import express from 'express'
 import http from 'http'
 import { Server as SocketServer } from 'socket.io'
+import cors from 'cors'
 import dotenv from 'dotenv'
 import { createClient } from '@libsql/client'
 
@@ -83,6 +84,8 @@ io.on('connection', async socket => {
     }
   })
 })
+
+app.use(cors())
 
 app.get('/', (req, res) => {
   res.send('<h1>HW  </h1>')
