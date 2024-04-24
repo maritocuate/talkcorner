@@ -84,12 +84,10 @@ io.on('connection', async socket => {
   })
 })
 
-server.listen(3000)
-
 app.get('/', (req, res) => {
   res.send('<h1>HW  </h1>')
 })
 
-server.listen(process.env.PORT || 4000, () => {
-  console.log('listening on:' + process.env.PORT)
+server.listen(process.env.PORT || 3000, () => {
+  console.log('listening on 3000')
 })
