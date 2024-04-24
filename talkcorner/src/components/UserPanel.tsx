@@ -15,14 +15,15 @@ export default function UserPanel({ socket }: { socket: Socket }) {
     }
   }, [])
 
-  const receiveMessage = (message: Message) => {
+  const receiveMessage = (message: Message, serverOffset: number) => {
     setMessages(prev => [...prev, message])
+    ;(socket.auth as any).serverOffset = serverOffset
   }
 
   const handleSubmit = (message: string) => {
     const newMessage: Message = {
       body: message,
-      from: String(socket.id).slice(0, 6),
+      from: (socket.auth as any).userName,
     }
 
     setMessages(prev => [...prev, newMessage])

@@ -6,11 +6,19 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import io, { Socket } from 'socket.io-client'
+import { generateUsername } from 'unique-username-generator'
+
 import UserPanel from './components/UserPanel'
 import UsersList from './components/UsersList'
 
 const socket: Socket = io(
-  import.meta.env.VITE_SOCKET || 'http://localhost:3000'
+  import.meta.env.VITE_SOCKET || 'http://localhost:3000',
+  {
+    auth: {
+      serverOffset: 0,
+      userName: generateUsername('-', 0, 15),
+    },
+  }
 )
 
 function App() {

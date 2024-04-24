@@ -4,16 +4,15 @@ import { useToast } from '@/components/ui/use-toast'
 import { ModeToggle } from './mode-toggle'
 import { Pencil, User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-//import { generateUsername } from 'unique-username-generator'
 
 export default function UsersList({ socket }: { socket: Socket }) {
   const [onlineUsers, setOnlineUsers] = useState([])
   const { toast } = useToast()
-  //const userName = generateUsername('-', 0, 15)
 
   useEffect(() => {
     socket.on('onlineUsers', users => {
-      setOnlineUsers(users)
+      const filteredUsers = users.filter((user: string) => user !== null)
+      setOnlineUsers(filteredUsers)
 
       toast({
         description: `${users[users.length - 1]} joined the chat`,
@@ -34,7 +33,7 @@ export default function UsersList({ socket }: { socket: Socket }) {
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        {socket.id?.slice(0, 6)}
+        {(socket.auth as any).userName}
         <Pencil size={15} className="text-muted-foreground" />
       </h2>
       <p className="text-muted-foreground font-semibold mb-3">
