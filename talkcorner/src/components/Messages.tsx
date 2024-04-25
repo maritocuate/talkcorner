@@ -2,7 +2,7 @@ import { Message } from '@/interfaces'
 
 export default function Messages({ messages }: { messages: Message[] }) {
   return (
-    <ul className="space-y-1 text-left p-3">
+    <ul className="space-y-1 text-left p-3 overflow-y-scroll">
       {messages.map((message, index) => (
         <li key={index} className="py-2 flex flex-col">
           <span className="text-sm text-muted-foreground">
