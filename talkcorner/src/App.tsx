@@ -11,12 +11,21 @@ import { generateUsername } from 'unique-username-generator'
 import UserPanel from './components/UserPanel'
 import UsersList from './components/UsersList'
 
+let userName
+if (!localStorage.getItem('local-username')) {
+  const randomName = generateUsername('-', 0, 15)
+  localStorage.setItem('local-username', randomName)
+  userName = randomName
+} else {
+  userName = localStorage.getItem('local-username')
+}
+
 const socket: Socket = io(
   import.meta.env.VITE_SOCKET || 'http://localhost:3000',
   {
     auth: {
       serverOffset: 0,
-      userName: generateUsername('-', 0, 15),
+      userName: userName,
     },
   }
 )

@@ -6,13 +6,16 @@ import { Pencil, User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 export default function UsersList({ socket }: { socket: Socket }) {
-  const [onlineUsers, setOnlineUsers] = useState([])
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([])
   const { toast } = useToast()
 
   useEffect(() => {
     socket.on('onlineUsers', users => {
-      const filteredUsers = users.filter((user: string) => user !== null)
-      setOnlineUsers(filteredUsers)
+      const filteredUsers: string[] = users.filter(
+        (user: string) => user !== null
+      )
+      const uniqueArray: string[] = [...new Set(filteredUsers)]
+      setOnlineUsers(uniqueArray)
 
       toast({
         description: `${users[users.length - 1]} joined the chat`,
