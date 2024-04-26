@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { Socket } from 'socket.io-client'
 import { useToast } from '@/components/ui/use-toast'
 import { ModeToggle } from './mode-toggle'
-import { Pencil, User } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { User } from 'lucide-react'
+import UserName from './UserName'
 
 export default function UsersList({ socket }: { socket: Socket }) {
   const [onlineUsers, setOnlineUsers] = useState<string[]>([])
@@ -29,16 +29,17 @@ export default function UsersList({ socket }: { socket: Socket }) {
     }
   }, [socket, toast])
 
+  const handleUserNameChange = (newUserName: string) => {
+    ;(socket.auth as any).userName = newUserName
+  }
+
   return (
     <div className="text-left p-2">
-      <h2 className="flex items-center gap-2 text-primary text-3xl font-bold mb-3">
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
-        {(socket.auth as any).userName}
-        <Pencil size={15} className="text-muted-foreground" />
-      </h2>
+      <UserName
+        username={(socket.auth as any).userName}
+        onUserNameChange={handleUserNameChange}
+      />
+
       <p className="text-muted-foreground font-semibold mb-3">
         <span className="mr-3">Online Users {onlineUsers.length}</span>
         <ModeToggle />
