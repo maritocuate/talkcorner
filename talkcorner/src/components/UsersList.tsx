@@ -11,11 +11,8 @@ export default function UsersList({ socket }: { socket: Socket }) {
 
   useEffect(() => {
     socket.on('onlineUsers', users => {
-      const filteredUsers: string[] = users.filter(
-        (user: string) => user !== null
-      )
-      const uniqueArray: string[] = [...new Set(filteredUsers)]
-      setOnlineUsers(uniqueArray)
+      const filteredUsers: string[] = filterUsers(users)
+      setOnlineUsers(filteredUsers)
 
       toast({
         description: `${users[users.length - 1]} joined the chat`,
@@ -28,6 +25,17 @@ export default function UsersList({ socket }: { socket: Socket }) {
       socket.off('onlineUsers')
     }
   }, [socket, toast])
+
+  const filterUsers = (users: string[]): string[] => {
+    const filteredUsers: string[] = users.filter(
+      (user: string) => user !== null
+    )
+    const uniqueArray: string[] = [...new Set(filteredUsers)]
+    const deleteCurrentUser = uniqueArray.filter(
+      (user: string) => user !== (socket.auth as any).userName
+    )
+    return deleteCurrentUser
+  }
 
   const handleUserNameChange = (newUserName: string) => {
     ;(socket.auth as any).userName = newUserName
