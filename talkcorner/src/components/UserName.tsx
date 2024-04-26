@@ -15,6 +15,12 @@ export default function UserName({
   const [currentName, setCurrentName] = useState<string>(username)
 
   const saveEdit = () => {
+    if (currentName.length < 4) {
+      const prevName = localStorage.getItem('local-username')
+      setCurrentName(prevName || username)
+      return
+    }
+
     setEditing(false)
     if (localStorage.getItem('local-username') !== currentName) {
       localStorage.setItem('local-username', currentName)
