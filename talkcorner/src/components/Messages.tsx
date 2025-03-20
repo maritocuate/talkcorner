@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Message } from '@/interfaces'
 
 export default function Messages({ messages }: { messages: Message[] }) {
   const [localMessages, setLocalMessages] = useState<Message[]>([])
   const messagesEndRef = useRef<HTMLUListElement>(null)
 
-  useEffect(() => {
-    scrollToBottom()
+  useLayoutEffect(() => {
     setLocalMessages(messages.slice(-40))
+    setTimeout(scrollToBottom, 0)
   }, [messages])
 
   const scrollToBottom = () => {
