@@ -11,6 +11,19 @@ export default function UsersList({ socket }: { socket: Socket }) {
 
   useEffect(() => {
     socket.on('onlineUsers', users => {
+      const filterUsers = (userList: string[]): string[] => {
+        const filtered: string[] = userList.filter(
+          (user: string) => user !== null
+        )
+        const uniqueArray: string[] = [...new Set(filtered)]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const currentUserName = (socket.auth as any).userName
+        const deleteCurrentUser = uniqueArray.filter(
+          (user: string) => user !== currentUserName
+        )
+        return deleteCurrentUser
+      }
+
       const filteredUsers: string[] = filterUsers(users)
       setOnlineUsers(filteredUsers)
 
@@ -26,24 +39,15 @@ export default function UsersList({ socket }: { socket: Socket }) {
     }
   }, [socket, toast])
 
-  const filterUsers = (users: string[]): string[] => {
-    const filteredUsers: string[] = users.filter(
-      (user: string) => user !== null
-    )
-    const uniqueArray: string[] = [...new Set(filteredUsers)]
-    const deleteCurrentUser = uniqueArray.filter(
-      (user: string) => user !== (socket.auth as any).userName
-    )
-    return deleteCurrentUser
-  }
-
   const handleUserNameChange = (newUserName: string) => {
-    ;(socket.auth as any).userName = newUserName
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (socket.auth as any).userName = newUserName
   }
 
   return (
     <div className="text-left p-2">
       <UserName
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         username={(socket.auth as any).userName}
         onUserNameChange={handleUserNameChange}
       />
@@ -53,8 +57,8 @@ export default function UsersList({ socket }: { socket: Socket }) {
         <ModeToggle />
       </p>
       <ul>
-        {onlineUsers.map((userId: string, index: number) => (
-          <li key={index} className="flex gap-2">
+        {onlineUsers.map((userId: string) => (
+          <li key={userId} className="flex gap-2">
             <User size={22} className="text-primary" />
             {userId}
           </li>
