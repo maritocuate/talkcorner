@@ -8,21 +8,23 @@ export default function UserPanel({ socket }: { socket: Socket }) {
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
+    const receiveMessage = (message: Message, serverOffset: number) => {
+      setMessages(prev => [...prev, message])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ; (socket.auth as any).serverOffset = serverOffset
+    }
+
     socket.on('message', receiveMessage)
 
     return () => {
       socket.off('message', receiveMessage)
     }
-  }, [])
-
-  const receiveMessage = (message: Message, serverOffset: number) => {
-    setMessages(prev => [...prev, message])
-    ;(socket.auth as any).serverOffset = serverOffset
-  }
+  }, [socket])
 
   const handleSubmit = (message: string) => {
     const newMessage: Message = {
       body: message,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       from: (socket.auth as any).userName,
     }
 
