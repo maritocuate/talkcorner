@@ -26,14 +26,13 @@ export default function Messages({ messages }: { messages: Message[] }) {
   return (
     <ul
       ref={messagesEndRef}
-      className="space-y-1 text-left p-3 overflow-y-scroll"
+      className="space-y-1 text-left p-3 overflow-y-scroll scrollbar-width-none"
     >
       {localMessages.map((message, index) => (
         <li
           key={index}
-          className={`py-2 flex flex-col ${
-            message.from === userName ? 'items-end' : ''
-          }`}
+          className={`py-2 flex flex-col ${message.from === userName ? 'items-end' : ''
+            }`}
         >
           <span className="text-sm text-muted-foreground">
             {message.from === userName ? 'You say:' : message.from + ' says:'}
