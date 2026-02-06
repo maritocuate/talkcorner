@@ -64,6 +64,12 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             setIsConnected(false)
         })
 
+        // Handle validation errors from server
+        socketInstance.on('validation-error', (error: { message: string }) => {
+            console.warn('⚠️ Validation error:', error.message)
+            // You can show a toast notification here if you want
+        })
+
         setSocket(socketInstance)
 
         return () => {
@@ -73,8 +79,26 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
     const updateUsername = (newUserName: string) => {
         if (socket) {
-            localStorage.setItem('local-username', newUserName)
+            const oldUserName = localStorage.getItem('local-username')
+
+            // Emit to server first
             socket.emit('update-username', newUserName)
+
+            // Only update localStorage if server accepts (listen for confirmation)
+            const handleSuccess = () => {
+                localStorage.setItem('local-username', newUserName)
+                socket.off('username-updated', handleSuccess)
+                socket.off('validation-error', handleError)
+            }
+
+            const handleError = () => {
+                console.warn('⚠️ Server rejected username change, reverting to:', oldUserName)
+                socket.off('username-updated', handleSuccess)
+                socket.off('validation-error', handleError)
+            }
+
+            socket.once('username-updated', handleSuccess)
+            socket.once('validation-error', handleError)
         }
     }
 
