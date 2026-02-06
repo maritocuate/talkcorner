@@ -8,9 +8,9 @@ export default function UserPanel() {
   const { socket } = useSocket()
   const [messages, setMessages] = useState<Message[]>([])
 
-  if (!socket) return <div>Connecting...</div>
-
   useEffect(() => {
+    if (!socket) return
+
     const receiveMessage = (message: Message, serverOffset: number) => {
       setMessages(prev => [...prev, message])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,6 +25,8 @@ export default function UserPanel() {
   }, [socket])
 
   const handleSubmit = (message: string) => {
+    if (!socket) return
+
     const newMessage: Message = {
       body: message,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,6 +36,8 @@ export default function UserPanel() {
     setMessages(prev => [...prev, newMessage])
     socket.emit('message', newMessage.body)
   }
+
+  if (!socket) return <div>Connecting...</div>
 
   return (
     <div className="flex flex-col justify-end h-full">

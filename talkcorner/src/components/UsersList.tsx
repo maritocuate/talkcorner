@@ -10,9 +10,9 @@ export default function UsersList() {
   const [onlineUsers, setOnlineUsers] = useState<string[]>([])
   const { toast } = useToast()
 
-  if (!socket) return <div>Loading...</div>
-
   useEffect(() => {
+    if (!socket) return
+
     socket.on('onlineUsers', users => {
       const filterUsers = (userList: string[]): string[] => {
         const filtered: string[] = userList.filter(
@@ -43,9 +43,12 @@ export default function UsersList() {
   }, [socket, toast])
 
   const handleUserNameChange = (newUserName: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (socket.auth as any).userName = newUserName
+    if (!socket) return
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ; (socket.auth as any).userName = newUserName
   }
+
+  if (!socket) return <div>Loading...</div>
 
   return (
     <div className="text-left p-2">
