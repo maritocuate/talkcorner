@@ -38,8 +38,8 @@ export default function Messages({ messages }: { messages: Message[] }) {
             className={`py-2 flex flex-col ${isOwnMessage ? 'items-end' : ''
               }`}
           >
-            <span className="text-sm text-muted-foreground">
-              {isOwnMessage ? 'You say:' : message.from + ' says:'}
+            <span className="text-sm text-muted-foreground opacity-70">
+              {isOwnMessage ? `${message.from} (you)` : message.from}
             </span>
             <span>{message.body}</span>
           </li>

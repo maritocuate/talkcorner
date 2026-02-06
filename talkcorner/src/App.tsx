@@ -49,13 +49,13 @@ function App() {
             className="hidden md:block h-screen"
             direction="horizontal"
           >
-            <ResizablePanel>
+            <ResizablePanel minSize={25}>
               <UsersList />
             </ResizablePanel>
 
             <ResizableHandle withHandle />
 
-            <ResizablePanel className="p-6">
+            <ResizablePanel className="p-6" minSize={30}>
               <UserPanel />
             </ResizablePanel>
           </ResizablePanelGroup>
