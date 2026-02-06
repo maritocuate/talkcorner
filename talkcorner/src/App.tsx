@@ -10,6 +10,7 @@ import { generateUsername } from 'unique-username-generator'
 
 import UserPanel from './components/UserPanel'
 import UsersList from './components/UsersList'
+import { useMediaQuery } from './hooks/use-media-query'
 
 let userName
 if (!localStorage.getItem('local-username')) {
@@ -31,9 +32,11 @@ const socket: Socket = io(
 )
 
 function App() {
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      {window.innerWidth < 768 ? (
+      {!isDesktop ? (
         <ResizablePanelGroup
           className="md:hidden h-screen"
           direction="vertical"
