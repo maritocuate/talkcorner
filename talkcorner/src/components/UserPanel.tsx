@@ -42,7 +42,7 @@ export default function UserPanel() {
   if (!socket) return <div>Connecting...</div>
 
   return (
-    <div className="flex flex-col justify-end h-full">
+    <div className="flex flex-col justify-end h-full md:p-6 md:h-screen">
       <Messages messages={messages} />
       <FormChat onSubmit={handleSubmit} />
     </div>

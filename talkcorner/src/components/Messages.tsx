@@ -26,7 +26,7 @@ export default function Messages({ messages }: { messages: Message[] }) {
   return (
     <ul
       ref={messagesEndRef}
-      className="space-y-1 text-left p-3 overflow-y-scroll [scrollbar-width:none]"
+      className="space-y-1 text-left px-4 pt-16 pb-3 md:p-3 overflow-y-scroll [scrollbar-width:none]"
     >
       {localMessages.map((message, index) => {
         // Use userId for comparison if available, fallback to username for old messages
