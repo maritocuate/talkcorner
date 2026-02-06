@@ -11,11 +11,13 @@ import { generateUsername } from 'unique-username-generator'
 interface SocketContextType {
     socket: Socket | null
     isConnected: boolean
+    updateUsername: (newUserName: string) => void
 }
 
 const SocketContext = createContext<SocketContextType>({
     socket: null,
     isConnected: false,
+    updateUsername: () => { },
 })
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -35,6 +37,13 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('local-username', userName)
         }
 
+        // Generate or retrieve userId (persistent across sessions)
+        let userId = localStorage.getItem('local-userId')
+        if (!userId) {
+            userId = crypto.randomUUID()
+            localStorage.setItem('local-userId', userId)
+        }
+
         // Initialize socket
         const socketInstance = io(
             import.meta.env.VITE_SOCKET || 'http://localhost:3000',
@@ -42,6 +51,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
                 auth: {
                     serverOffset: 0,
                     userName: userName,
+                    userId: userId,
                 },
             }
         )
@@ -61,8 +71,15 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [])
 
+    const updateUsername = (newUserName: string) => {
+        if (socket) {
+            localStorage.setItem('local-username', newUserName)
+            socket.emit('update-username', newUserName)
+        }
+    }
+
     return (
-        <SocketContext.Provider value={{ socket, isConnected }}>
+        <SocketContext.Provider value={{ socket, isConnected, updateUsername }}>
             {children}
         </SocketContext.Provider>
     )

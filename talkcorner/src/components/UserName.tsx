@@ -1,18 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Pencil } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { useSocket } from '@/context/socket-provider'
 
 interface UserNameProps {
   username: string
-  onUserNameChange: (newUserName: string) => void
 }
 
 export default function UserName({
   username,
-  onUserNameChange,
 }: UserNameProps) {
+  const { updateUsername } = useSocket()
   const [editing, setEditing] = useState<boolean>(false)
   const [currentName, setCurrentName] = useState<string>(username)
+
+  useEffect(() => {
+    setCurrentName(username)
+  }, [username])
 
   const saveEdit = () => {
     if (currentName.length < 4) {
@@ -23,8 +27,7 @@ export default function UserName({
 
     setEditing(false)
     if (localStorage.getItem('local-username') !== currentName) {
-      localStorage.setItem('local-username', currentName)
-      onUserNameChange(currentName)
+      updateUsername(currentName)
     }
   }
 

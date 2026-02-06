@@ -25,6 +25,7 @@ db.execute(`
   CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
+    userId TEXT,
     body TEXT NOT NULL,
     date DATETIME DEFAULT CURRENT_TIMESTAMP
   )
@@ -35,16 +36,17 @@ db.execute(`
 const onlineUsers = []
 io.on('connection', async socket => {
   const userName = socket.handshake.auth.userName
+  const userId = socket.handshake.auth.userId
 
-  onlineUsers.push(userName)
+  onlineUsers.push({ userId, userName })
   io.emit('onlineUsers', onlineUsers)
 
   socket.on('message', async body => {
     let result
     try {
       result = await db.execute({
-        sql: 'INSERT INTO messages (username, body) VALUES (:username, :message)',
-        args: { username: userName, message: body },
+        sql: 'INSERT INTO messages (username, userId, body) VALUES (:username, :userId, :message)',
+        args: { username: userName, userId: userId, message: body },
       })
     } catch (error) {
       console.error(error)
@@ -54,8 +56,23 @@ io.on('connection', async socket => {
     socket.broadcast.emit('message', {
       body,
       from: userName,
-      //from: result.lastInsertRowid.toString(),
+      userId: userId,
     })
+  })
+
+  socket.on('update-username', (newUserName) => {
+    const oldUserName = socket.handshake.auth.userName
+    socket.handshake.auth.userName = newUserName
+
+    // Update in onlineUsers list
+    const userIndex = onlineUsers.findIndex(u => u.userId === userId)
+    if (userIndex !== -1) {
+      onlineUsers[userIndex].userName = newUserName
+    }
+
+    // Broadcast to all clients
+    io.emit('onlineUsers', onlineUsers)
+    io.emit('username-updated', { userId, oldUserName, newUserName })
   })
 
   if (!socket.recovered) {
@@ -69,6 +86,7 @@ io.on('connection', async socket => {
         socket.emit('message', {
           body: row.body,
           from: row.username,
+          userId: row.userId,
         })
       })
     } catch (error) {
@@ -77,7 +95,7 @@ io.on('connection', async socket => {
   }
 
   socket.on('disconnect', () => {
-    const index = onlineUsers.indexOf(userName)
+    const index = onlineUsers.findIndex(u => u.userId === userId)
     if (index !== -1) {
       onlineUsers.splice(index, 1)
       io.emit('onlineUsers', onlineUsers)

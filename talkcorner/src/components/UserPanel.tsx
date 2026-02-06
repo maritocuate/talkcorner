@@ -31,6 +31,8 @@ export default function UserPanel() {
       body: message,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       from: (socket.auth as any).userName,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      userId: (socket.auth as any).userId,
     }
 
     setMessages(prev => [...prev, newMessage])

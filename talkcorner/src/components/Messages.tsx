@@ -3,7 +3,7 @@ import { Message } from '@/interfaces'
 
 export default function Messages({ messages }: { messages: Message[] }) {
   const [localMessages, setLocalMessages] = useState<Message[]>([])
-  const [userName, setUserName] = useState<string>('')
+  const [userId, setUserId] = useState<string>('')
   const messagesEndRef = useRef<HTMLUListElement>(null)
 
   useLayoutEffect(() => {
@@ -13,8 +13,8 @@ export default function Messages({ messages }: { messages: Message[] }) {
   }, [messages])
 
   const checkUser = () => {
-    const localUserName = localStorage.getItem('local-username')
-    if (localUserName) setUserName(localUserName)
+    const localUserId = localStorage.getItem('local-userId')
+    if (localUserId) setUserId(localUserId)
   }
 
   const scrollToBottom = () => {
@@ -26,20 +26,25 @@ export default function Messages({ messages }: { messages: Message[] }) {
   return (
     <ul
       ref={messagesEndRef}
-      className="space-y-1 text-left p-3 overflow-y-scroll scrollbar-width-none"
+      className="space-y-1 text-left p-3 overflow-y-scroll [scrollbar-width:none]"
     >
-      {localMessages.map((message, index) => (
-        <li
-          key={index}
-          className={`py-2 flex flex-col ${message.from === userName ? 'items-end' : ''
-            }`}
-        >
-          <span className="text-sm text-muted-foreground">
-            {message.from === userName ? 'You say:' : message.from + ' says:'}
-          </span>
-          <span>{message.body}</span>
-        </li>
-      ))}
+      {localMessages.map((message, index) => {
+        // Use userId for comparison if available, fallback to username for old messages
+        const isOwnMessage = message.userId ? message.userId === userId : false
+
+        return (
+          <li
+            key={index}
+            className={`py-2 flex flex-col ${isOwnMessage ? 'items-end' : ''
+              }`}
+          >
+            <span className="text-sm text-muted-foreground">
+              {isOwnMessage ? 'You say:' : message.from + ' says:'}
+            </span>
+            <span>{message.body}</span>
+          </li>
+        )
+      })}
     </ul>
   )
 }
