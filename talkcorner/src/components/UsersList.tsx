@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Socket } from 'socket.io-client'
 import { useToast } from '@/components/ui/use-toast'
 import { ModeToggle } from './mode-toggle'
 import { User } from 'lucide-react'
 import UserName from './UserName'
+import { useSocket } from '@/context/socket-provider'
 
-export default function UsersList({ socket }: { socket: Socket }) {
+export default function UsersList() {
+  const { socket } = useSocket()
   const [onlineUsers, setOnlineUsers] = useState<string[]>([])
   const { toast } = useToast()
+
+  if (!socket) return <div>Loading...</div>
 
   useEffect(() => {
     socket.on('onlineUsers', users => {

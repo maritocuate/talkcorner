@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Message } from '@/interfaces'
-import { Socket } from 'socket.io-client'
 import FormChat from './FormChat'
 import Messages from './Messages'
+import { useSocket } from '@/context/socket-provider'
 
-export default function UserPanel({ socket }: { socket: Socket }) {
+export default function UserPanel() {
+  const { socket } = useSocket()
   const [messages, setMessages] = useState<Message[]>([])
+
+  if (!socket) return <div>Connecting...</div>
 
   useEffect(() => {
     const receiveMessage = (message: Message, serverOffset: number) => {
