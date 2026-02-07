@@ -149,6 +149,21 @@ VITE_API_URL=https://talkcorner-api.onrender.com  # Tu backend
 - Frontend `VITE_API_URL`: `https://talkcorner-api.onrender.com`
 - Sin `/` al final
 
+### Problema: Cookie se crea pero el frontend sigue mostrando login
+
+**Causa**: Las cookies cross-origin requieren `sameSite: 'none'` y `secure: true`.
+
+**Solución**: El código ya está configurado correctamente si:
+1. `NODE_ENV=production` en Render.com
+2. Ambos dominios usan HTTPS (Vercel y Render lo hacen por defecto)
+3. Hiciste push del código más reciente a Render
+
+**Verifica en DevTools del navegador:**
+- Application → Cookies → debería ver `auth_token` con:
+  - `SameSite: None`
+  - `Secure: ✓`
+  - `HttpOnly: ✓`
+
 ### Problema: Socket.io no conecta
 
 **Solución**:

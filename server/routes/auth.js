@@ -33,11 +33,13 @@ router.get('/auth/google/callback',
                 { expiresIn: '7d' }
             )
 
+            const isProduction = process.env.NODE_ENV === 'production'
+
             // Set httpOnly cookie
             res.cookie('auth_token', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: isProduction, // true in production (HTTPS required)
+                sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-origin in production
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             })
 
@@ -51,7 +53,13 @@ router.get('/auth/google/callback',
 
 // Logout
 router.get('/auth/logout', (req, res) => {
-    res.clearCookie('auth_token')
+    const isProduction = process.env.NODE_ENV === 'production'
+
+    res.clearCookie('auth_token', {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
+    })
     res.json({ success: true })
 })
 
@@ -67,7 +75,13 @@ router.get('/auth/me', (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         res.json(decoded)
     } catch (err) {
-        res.clearCookie('auth_token')
+        const isProduction = process.env.NODE_ENV === 'production'
+
+        res.clearCookie('auth_token', {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax'
+        })
         res.status(401).json({ error: 'Invalid token' })
     }
 })
