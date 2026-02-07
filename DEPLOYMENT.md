@@ -17,6 +17,9 @@ DATABASE_AUTH_TOKEN=your-turso-token
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
 
+# ⚠️ IMPORTANTE - URL completa de tu backend en Render
+CALLBACK_URL=https://tu-backend.onrender.com/auth/google/callback
+
 # Security
 SESSION_SECRET=your-random-secret-here
 JWT_SECRET=your-random-jwt-secret
@@ -27,7 +30,9 @@ NODE_ENV=production
 PORT=3000
 ```
 
-**⚠️ Importante**: `CLIENT_URL` debe ser la URL de tu frontend en Vercel **sin trailing slash**.
+**⚠️ Importante**: 
+- `CLIENT_URL` debe ser la URL de tu frontend en Vercel **sin trailing slash**.
+- `CALLBACK_URL` debe ser la URL **completa** de tu backend en Render con el path `/auth/google/callback`
 
 ### 2. Google Cloud Console - Redirect URI
 
