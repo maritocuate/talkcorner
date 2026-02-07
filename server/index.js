@@ -56,18 +56,28 @@ const onlineUsers = new Map()
 io.use(socketAuthMiddleware)
 
 io.on('connection', async socket => {
-  // Add to online users
-  onlineUsers.set(socket.userId, {
-    displayName: socket.displayName,
-    photo: socket.photo,
-    email: socket.email
-  })
+  // Only add authenticated users to online users
+  if (!socket.isAnonymous) {
+    onlineUsers.set(socket.userId, {
+      displayName: socket.displayName,
+      photo: socket.photo,
+      email: socket.email
+    })
 
-  // Broadcast online users
-  io.emit('onlineUsers', Array.from(onlineUsers.values()))
+    // Broadcast online users
+    io.emit('onlineUsers', Array.from(onlineUsers.values()))
+  }
 
   // Handle messages
   socket.on('message', async body => {
+    // Block anonymous users from sending messages
+    if (socket.isAnonymous) {
+      socket.emit('auth-required', {
+        message: 'You must be logged in to send messages'
+      })
+      return
+    }
+
     const messageResult = messageSchema.safeParse(body)
 
     if (!messageResult.success) {
@@ -96,7 +106,7 @@ io.on('connection', async socket => {
     }
   })
 
-  // Load historical messages
+  // Load historical messages for all users (anonymous and authenticated)
   if (!socket.recovered) {
     try {
       const results = await db.execute({
@@ -116,10 +126,12 @@ io.on('connection', async socket => {
     }
   }
 
-  // Handle disconnect
+  // Handle disconnect - only for authenticated users
   socket.on('disconnect', () => {
-    onlineUsers.delete(socket.userId)
-    io.emit('onlineUsers', Array.from(onlineUsers.values()))
+    if (!socket.isAnonymous) {
+      onlineUsers.delete(socket.userId)
+      io.emit('onlineUsers', Array.from(onlineUsers.values()))
+    }
   })
 })
 

@@ -4,8 +4,10 @@ export const socketAuthMiddleware = (socket, next) => {
     // Parse cookies from handshake headers
     const cookies = socket.handshake.headers.cookie
 
+    // No cookies - allow anonymous connection
     if (!cookies) {
-        return next(new Error('Authentication required'))
+        socket.isAnonymous = true
+        return next()
     }
 
     // Extract auth_token from cookies
@@ -20,18 +22,24 @@ export const socketAuthMiddleware = (socket, next) => {
         }
     }
 
+    // No token - allow anonymous connection
     if (!token) {
-        return next(new Error('Authentication required'))
+        socket.isAnonymous = true
+        return next()
     }
 
+    // Verify token and attach user data if valid
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         socket.userId = decoded.userId
         socket.email = decoded.email
         socket.displayName = decoded.displayName
         socket.photo = decoded.photo
+        socket.isAnonymous = false
         next()
     } catch (err) {
-        next(new Error('Invalid token'))
+        // Invalid token - allow anonymous connection
+        socket.isAnonymous = true
+        next()
     }
 }

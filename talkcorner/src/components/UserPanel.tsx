@@ -37,12 +37,21 @@ export default function UserPanel() {
     socket.emit('message', newMessage.body)
   }
 
+  const handleLoginRequired = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+    window.location.href = `${apiUrl}/auth/google`
+  }
+
   if (!socket) return <div>Connecting...</div>
 
   return (
     <div className="flex flex-col justify-end h-full md:p-6 md:h-screen">
       <Messages messages={messages} />
-      <FormChat onSubmit={handleSubmit} />
+      <FormChat
+        onSubmit={handleSubmit}
+        isAuthenticated={!!user}
+        onLoginRequired={handleLoginRequired}
+      />
     </div>
   )
 }

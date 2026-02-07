@@ -15,7 +15,6 @@ import { useMediaQuery } from './hooks/use-media-query'
 import { SocketProvider } from './context/socket-provider'
 import { AuthProvider, useAuth } from './context/auth-provider'
 import { Button } from './components/ui/button'
-import Login from './pages/Login'
 
 function ChatInterface() {
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -68,7 +67,7 @@ function ChatInterface() {
 }
 
 function AppContent() {
-  const { user, loading } = useAuth()
+  const { loading } = useAuth()
 
   if (loading) {
     return (
@@ -81,10 +80,7 @@ function AppContent() {
     )
   }
 
-  if (!user) {
-    return <Login />
-  }
-
+  // Show chat interface to everyone (authenticated and anonymous)
   return <ChatInterface />
 }
 
