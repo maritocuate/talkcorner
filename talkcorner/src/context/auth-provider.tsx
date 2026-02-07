@@ -23,8 +23,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
         // Check if user is authenticated
-        fetch('http://localhost:3000/auth/me', {
+        fetch(`${apiUrl}/auth/me`, {
             credentials: 'include' // Send cookies
         })
             .then(res => {
@@ -43,8 +45,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, [])
 
     const logout = async () => {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
         try {
-            await fetch('http://localhost:3000/auth/logout', {
+            await fetch(`${apiUrl}/auth/logout`, {
                 credentials: 'include'
             })
             setUser(null)
