@@ -1,21 +1,16 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Message } from '@/interfaces'
+import { useAuth } from '@/context/auth-provider'
 
 export default function Messages({ messages }: { messages: Message[] }) {
+  const { user } = useAuth()
   const [localMessages, setLocalMessages] = useState<Message[]>([])
-  const [userId, setUserId] = useState<string>('')
   const messagesEndRef = useRef<HTMLUListElement>(null)
 
   useLayoutEffect(() => {
-    checkUser()
     setLocalMessages(messages.slice(-40))
     setTimeout(scrollToBottom, 0)
   }, [messages])
-
-  const checkUser = () => {
-    const localUserId = localStorage.getItem('local-userId')
-    if (localUserId) setUserId(localUserId)
-  }
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -29,8 +24,7 @@ export default function Messages({ messages }: { messages: Message[] }) {
       className="space-y-1 text-left px-4 pt-16 pb-3 md:p-3 overflow-y-scroll [scrollbar-width:none]"
     >
       {localMessages.map((message, index) => {
-        // Use userId for comparison if available, fallback to username for old messages
-        const isOwnMessage = message.userId ? message.userId === userId : false
+        const isOwnMessage = user && message.userId === user.userId
 
         return (
           <li

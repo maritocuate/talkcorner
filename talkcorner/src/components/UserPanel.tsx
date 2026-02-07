@@ -3,18 +3,18 @@ import { Message } from '@/interfaces'
 import FormChat from './FormChat'
 import Messages from './Messages'
 import { useSocket } from '@/context/socket-provider'
+import { useAuth } from '@/context/auth-provider'
 
 export default function UserPanel() {
   const { socket } = useSocket()
+  const { user } = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
     if (!socket) return
 
-    const receiveMessage = (message: Message, serverOffset: number) => {
+    const receiveMessage = (message: Message) => {
       setMessages(prev => [...prev, message])
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ; (socket.auth as any).serverOffset = serverOffset
     }
 
     socket.on('message', receiveMessage)
@@ -25,14 +25,12 @@ export default function UserPanel() {
   }, [socket])
 
   const handleSubmit = (message: string) => {
-    if (!socket) return
+    if (!socket || !user) return
 
     const newMessage: Message = {
       body: message,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      from: (socket.auth as any).userName,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      userId: (socket.auth as any).userId,
+      from: user.displayName,
+      userId: user.userId,
     }
 
     setMessages(prev => [...prev, newMessage])

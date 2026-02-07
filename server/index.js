@@ -3,139 +3,108 @@ import http from 'http'
 import { Server as SocketServer } from 'socket.io'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import { createClient } from '@libsql/client'
 import { z } from 'zod'
+import passport from 'passport'
+import cookieParser from 'cookie-parser'
 
-// Validation schemas
-const authSchema = z.object({
-  userName: z.string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username must be at most 20 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and hyphens'),
-  userId: z.string().uuid('Invalid user ID format'),
-  serverOffset: z.number().int().min(0).optional().default(0)
-})
+// Import configurations and middleware
+import { db, initDatabase } from './config/database.js'
+import { configurePassport } from './config/passport.js'
+import { socketAuthMiddleware } from './middleware/socketAuth.js'
+import authRoutes from './routes/auth.js'
 
+// Load environment variables
+dotenv.config()
+
+// Validation schema for messages
 const messageSchema = z.string()
   .min(1, 'Message cannot be empty')
   .max(2000, 'Message is too long (max 2000 characters)')
   .trim()
 
-const usernameUpdateSchema = z.string()
-  .min(3, 'Username must be at least 3 characters')
-  .max(20, 'Username must be at most 20 characters')
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and hyphens')
-  .trim()
-
+// Initialize Express app
 const app = express()
 const server = http.createServer(app)
 const io = new SocketServer(server, {
   cors: {
-    origin: '*',
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
   },
 })
 
-// INIT DATABASE
-dotenv.config()
+// Middleware
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}))
+app.use(express.json())
+app.use(cookieParser())
+app.use(passport.initialize())
 
-const db = createClient({
-  url: process.env.DATABASE_URL,
-  authToken: process.env.DATABASE_AUTH_TOKEN,
-})
+// Configure Passport
+configurePassport()
 
-db.execute(`
-  CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    userId TEXT,
-    body TEXT NOT NULL,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`)
+// Initialize database
+await initDatabase()
 
-// END DATABASE
+// Auth routes
+app.use(authRoutes)
 
-const onlineUsers = []
+// Socket.io authentication and connection handling
+const onlineUsers = new Map()
+
+io.use(socketAuthMiddleware)
+
 io.on('connection', async socket => {
-  // Validate authentication data
-  const authResult = authSchema.safeParse(socket.handshake.auth)
+  // Add to online users
+  onlineUsers.set(socket.userId, {
+    displayName: socket.displayName,
+    photo: socket.photo,
+    email: socket.email
+  })
 
-  if (!authResult.success) {
-    console.warn('⚠️ Invalid authentication attempt:', authResult.error.errors)
-    socket.emit('validation-error', { message: 'Invalid authentication data', errors: authResult.error.errors })
-    socket.disconnect()
-    return
-  }
+  // Broadcast online users
+  io.emit('onlineUsers', Array.from(onlineUsers.values()))
 
-  const { userName, userId, serverOffset } = authResult.data
-
-  onlineUsers.push({ userId, userName })
-  io.emit('onlineUsers', onlineUsers)
-
+  // Handle messages
   socket.on('message', async body => {
-    // Validate message
     const messageResult = messageSchema.safeParse(body)
 
     if (!messageResult.success) {
-      console.warn('⚠️ Invalid message from', userName, ':', messageResult.error.errors[0].message)
-      socket.emit('validation-error', { message: messageResult.error.errors[0].message })
+      socket.emit('validation-error', {
+        message: messageResult.error.errors[0].message
+      })
       return
     }
 
     const sanitizedMessage = messageResult.data
 
-    let result
     try {
-      result = await db.execute({
-        sql: 'INSERT INTO messages (username, userId, body) VALUES (:username, :userId, :message)',
-        args: { username: userName, userId: userId, message: sanitizedMessage },
+      await db.execute({
+        sql: 'INSERT INTO messages (username, userId, body) VALUES (?, ?, ?)',
+        args: [socket.displayName, socket.userId, sanitizedMessage],
+      })
+
+      socket.broadcast.emit('message', {
+        body: sanitizedMessage,
+        from: socket.displayName,
+        userId: socket.userId,
       })
     } catch (error) {
-      console.error('❌ Database error:', error.message)
+      console.error('Database error:', error.message)
       socket.emit('validation-error', { message: 'Failed to send message' })
-      return
     }
-
-    socket.broadcast.emit('message', {
-      body,
-      from: userName,
-      userId: userId,
-    })
   })
 
-  socket.on('update-username', (newUserName) => {
-    // Validate new username
-    const usernameResult = usernameUpdateSchema.safeParse(newUserName)
-
-    if (!usernameResult.success) {
-      console.warn('⚠️ Invalid username update attempt by', userName, ':', usernameResult.error.errors[0].message)
-      socket.emit('validation-error', { message: usernameResult.error.errors[0].message })
-      return
-    }
-
-    const sanitizedUsername = usernameResult.data
-    const oldUserName = socket.handshake.auth.userName
-    socket.handshake.auth.userName = sanitizedUsername
-
-    // Update in onlineUsers list
-    const userIndex = onlineUsers.findIndex(u => u.userId === userId)
-    if (userIndex !== -1) {
-      onlineUsers[userIndex].userName = sanitizedUsername
-    }
-
-    // Broadcast to all clients
-    io.emit('onlineUsers', onlineUsers)
-    io.emit('username-updated', { userId, oldUserName, newUserName: sanitizedUsername })
-  })
-
+  // Load historical messages
   if (!socket.recovered) {
     try {
       const results = await db.execute({
-        sql: 'SELECT * FROM messages WHERE id > ?',
-        args: [serverOffset],
+        sql: 'SELECT * FROM messages ORDER BY id DESC LIMIT 50',
+        args: []
       })
 
-      results.rows.forEach(row => {
+      results.rows.reverse().forEach(row => {
         socket.emit('message', {
           body: row.body,
           from: row.username,
@@ -143,46 +112,37 @@ io.on('connection', async socket => {
         })
       })
     } catch (error) {
-      console.error('❌ Error recovering messages:', error.message)
+      console.error('Error recovering messages:', error.message)
     }
   }
 
+  // Handle disconnect
   socket.on('disconnect', () => {
-    const index = onlineUsers.findIndex(u => u.userId === userId)
-    if (index !== -1) {
-      onlineUsers.splice(index, 1)
-      io.emit('onlineUsers', onlineUsers)
-    }
+    onlineUsers.delete(socket.userId)
+    io.emit('onlineUsers', Array.from(onlineUsers.values()))
   })
 })
 
-app.use(cors())
-
-app.get('/', (req, res) => {
-  res.send('<h1>HW  </h1>')
-})
-
-// Error handling for server
+// Error handlers
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    console.error('❌ Port 3000 is already in use. Please stop other instances or change the port.')
+    console.error('Port 3000 is already in use. Please stop other instances or change the port.')
     process.exit(1)
   } else {
-    console.error('❌ Server error:', error)
+    console.error('Server error:', error)
   }
 })
 
-// Global error handlers
 process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught Exception:', error)
-  // Don't exit, just log
+  console.error('Uncaught Exception:', error)
 })
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason)
-  // Don't exit, just log
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
-server.listen(process.env.PORT || 3000, () => {
-  console.log('✅ Server listening on port 3000')
+// Start server
+const PORT = process.env.PORT || 3000
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`)
 })
